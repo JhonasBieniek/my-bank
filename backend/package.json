@@ -1,0 +1,12 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "My Bank API (Node.js)",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node -e \"console.log('Backend API not implemented yet')\"",
+    "build": "node -e \"console.log('Backend build not implemented yet')\"",
+    "test": "node -e \"console.log('No backend tests yet')\""
+  }
+}
