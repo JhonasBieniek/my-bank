@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+.git
+.gitignore
+.env
+dist
+**/dist
+coverage
+**/.angular
+*.md
+!backend/prisma/**
+.DS_Store
+Thumbs.db

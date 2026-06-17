@@ -1,0 +1,1 @@
+export const OPENING_BALANCE_CENTS = 30_000;

@@ -19,5 +19,49 @@ services:
       retries: 5
       start_period: 30s
 
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: my-bank-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      API_PORT: 3000
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+      SHADOW_DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/${MYSQL_DATABASE}
+      SESSION_SECRET: ${SESSION_SECRET}
+    volumes:
+      - .:/app
+      - app_node_modules:/app/node_modules
+    working_dir: /app/backend
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: my-bank-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-4200}:4200"
+    volumes:
+      - .:/app
+      - app_node_modules:/app/node_modules
+      - frontend_node_modules:/app/frontend/node_modules
+    working_dir: /app/frontend
+    depends_on:
+      - api
+    command: sh -c "npm install --no-save @rollup/rollup-linux-x64-musl @esbuild/linux-x64 && npm run dev:docker"
+
 volumes:
   mysql_data:
+  app_node_modules:
+  frontend_node_modules:

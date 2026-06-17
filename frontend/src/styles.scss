@@ -1,1 +1,253 @@
-/* You can add global styles to this file, and also import other style files */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f4f6f8;
+  color: #1a1f2c;
+}
+
+a {
+  color: #0f766e;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.small {
+  font-size: 0.875rem;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  word-break: break-all;
+}
+
+.card,
+.auth-card,
+.hero-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.auth-card,
+.narrow {
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+.hero-card .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.balance {
+  font-size: 2rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  &.standalone {
+    margin-top: 0;
+  }
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+
+  &.checkbox {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='file'] {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: #0f766e;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: #1a1f2c;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.alert,
+.success {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.alert {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.auth-footer {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.ledger-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+
+  li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25rem 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  time {
+    grid-column: 1 / -1;
+  }
+}
+
+.credit {
+  color: #047857;
+}
+
+.debit {
+  color: #b91c1c;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.product-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.product-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+
+  &.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    color: #94a3b8;
+  }
+}
+
+.product-body {
+  padding: 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.price {
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #ecfeff;
+  color: #0e7490;
+  font-size: 0.75rem;
+}

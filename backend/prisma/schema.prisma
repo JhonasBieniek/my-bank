@@ -1,0 +1,38 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url = env("DATABASE_URL")
+    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  phone          String   @unique
+  passwordDigest String   @map("password_digest")
+  paymentKey     String   @unique @map("payment_key")
+  balanceCents   Int      @default(0) @map("balance_cents")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  ledgerEntries  LedgerEntry[]
+
+  @@map("users")
+}
+
+model LedgerEntry {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @map("user_id")
+  kind              String
+  amountCents       Int      @map("amount_cents")
+  balanceAfterCents Int      @map("balance_after_cents")
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("ledger_entries")
+}
