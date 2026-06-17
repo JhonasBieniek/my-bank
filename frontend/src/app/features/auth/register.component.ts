@@ -11,63 +11,8 @@ import { OPENING_BALANCE_CENTS } from '../../shared/constants';
   selector: 'app-register',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
-  template: `
-    <section class="auth-card">
-      <h1>Criar conta</h1>
-      <p class="muted">
-        Saldo inicial de {{ openingBalanceLabel }} após o cadastro.
-      </p>
-
-      @if (errorMessage) {
-        <div class="alert">{{ errorMessage }}</div>
-      }
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
-        <div class="field">
-          <label for="name">Nome completo</label>
-          <input id="name" type="text" formControlName="name" />
-        </div>
-        <div class="field">
-          <label for="email">E-mail</label>
-          <input id="email" type="email" formControlName="email" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="phone">Telefone</label>
-          <input
-            id="phone"
-            type="tel"
-            formControlName="phone"
-            placeholder="(11) 99999-0000"
-          />
-        </div>
-        <div class="field">
-          <label for="password">Senha</label>
-          <input
-            id="password"
-            type="password"
-            formControlName="password"
-            autocomplete="new-password"
-          />
-        </div>
-        <div class="field">
-          <label for="password_confirmation">Confirmar senha</label>
-          <input
-            id="password_confirmation"
-            type="password"
-            formControlName="password_confirmation"
-            autocomplete="new-password"
-          />
-        </div>
-        <button type="submit" class="btn btn-primary btn-block" [disabled]="form.invalid || loading">
-          {{ loading ? 'Criando...' : 'Criar conta' }}
-        </button>
-      </form>
-
-      <p class="auth-footer">
-        Já tem conta? <a routerLink="/login">Entrar</a>
-      </p>
-    </section>
-  `,
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
   private readonly fb = inject(FormBuilder);

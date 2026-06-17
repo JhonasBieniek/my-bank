@@ -25,5 +25,11 @@ export const routes: Routes = [
         (m) => m.DashboardComponent
       ),
   },
+  {
+    path: 'transfers',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/transfers/transfers.routes').then((m) => m.transferRoutes),
+  },
   { path: '**', redirectTo: 'login' },
 ];

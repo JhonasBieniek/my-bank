@@ -2,6 +2,10 @@
   @if (user()) {
     <header class="app-header">
       <a routerLink="/dashboard" class="brand">My Bank</a>
+      <nav class="app-nav">
+        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+        <a routerLink="/transfers" routerLinkActive="active">Transferir</a>
+      </nav>
       <div class="header-actions">
         <span class="muted small">{{ user()?.name }}</span>
         <button type="button" class="btn btn-ghost" (click)="logout()">Sair</button>

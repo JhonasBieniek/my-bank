@@ -2,8 +2,9 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const { prisma } = require('../lib/prisma');
 const { normalize: normalizePhone } = require('../lib/phoneNormalizer');
-const { OPENING_BALANCE_CENTS, LEDGER_KINDS } = require('../lib/constants');
+const { OPENING_BALANCE_CENTS } = require('../lib/constants');
 const { ok, fail } = require('./result');
+const { withWalletTransaction, applyUserBalance, recordLedgerEntry } = require('./baseService');
 
 const BCRYPT_COST = 12;
 
@@ -23,7 +24,7 @@ async function registerAccount({ name, email, phone, password }) {
   const paymentKey = uuidv4();
 
   try {
-    const user = await prisma.$transaction(async (tx) => {
+    const user = await withWalletTransaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
           name: name.trim(),
@@ -31,20 +32,29 @@ async function registerAccount({ name, email, phone, password }) {
           phone: normalizedPhone,
           passwordDigest,
           paymentKey,
-          balanceCents: OPENING_BALANCE_CENTS,
+          balanceCents: 0,
         },
       });
 
-      await tx.ledgerEntry.create({
-        data: {
-          userId: createdUser.id,
-          kind: LEDGER_KINDS[0],
-          amountCents: OPENING_BALANCE_CENTS,
-          balanceAfterCents: OPENING_BALANCE_CENTS,
-        },
+      const balanceAfterCents = await applyUserBalance(
+        tx,
+        createdUser.id,
+        0,
+        OPENING_BALANCE_CENTS
+      );
+
+      await recordLedgerEntry(tx, {
+        accountType: 'User',
+        accountId: createdUser.id,
+        kind: 'opening_balance',
+        amountCents: OPENING_BALANCE_CENTS,
+        balanceAfterCents,
+        referenceType: 'User',
+        referenceId: createdUser.id,
+        metadata: { reason: 'opening_balance' },
       });
 
-      return createdUser;
+      return tx.user.findUniqueOrThrow({ where: { id: createdUser.id } });
     });
 
     return ok(user);

@@ -19,14 +19,21 @@ CREATE TABLE `users` (
 -- CreateTable
 CREATE TABLE `ledger_entries` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `user_id` INTEGER NOT NULL,
+    `account_type` VARCHAR(191) NOT NULL,
+    `account_id` INTEGER NOT NULL,
     `kind` VARCHAR(191) NOT NULL,
     `amount_cents` INTEGER NOT NULL,
     `balance_after_cents` INTEGER NOT NULL,
+    `idempotency_key` VARCHAR(191) NULL,
+    `metadata` TEXT NULL,
+    `reference_type` VARCHAR(191) NULL,
+    `reference_id` INTEGER NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
 
+    INDEX `ledger_entries_account_type_account_id_idx`(`account_type`, `account_id`),
+    INDEX `ledger_entries_created_at_idx`(`created_at`),
+    INDEX `ledger_entries_idempotency_key_idx`(`idempotency_key`),
+    INDEX `ledger_entries_reference_type_reference_id_idx`(`reference_type`, `reference_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- AddForeignKey
-ALTER TABLE `ledger_entries` ADD CONSTRAINT `ledger_entries_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

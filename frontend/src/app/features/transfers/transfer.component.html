@@ -1,0 +1,44 @@
+<section class="card narrow">
+  <h1>Transferir</h1>
+  <p class="muted">Informe o destinatário e o valor em reais.</p>
+
+  @if (errorMessage) {
+    <div class="alert">{{ errorMessage }}</div>
+  }
+
+  @if (successMessage) {
+    <div class="success">{{ successMessage }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
+    <div class="field">
+      <label for="payee_identifier">Destinatário</label>
+      <input
+        id="payee_identifier"
+        type="text"
+        formControlName="payee_identifier"
+        placeholder="E-mail, telefone ou chave de pagamento"
+      />
+    </div>
+    <div class="field">
+      <label for="amount">Valor (R$)</label>
+      <input
+        id="amount"
+        type="text"
+        formControlName="amount"
+        inputmode="decimal"
+        placeholder="29,90"
+      />
+    </div>
+    <div class="actions">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="form.invalid || loading || submitted"
+      >
+        {{ loading ? 'Enviando...' : 'Transferir' }}
+      </button>
+      <a routerLink="/dashboard" class="btn btn-secondary">Voltar</a>
+    </div>
+  </form>
+</section>

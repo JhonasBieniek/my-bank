@@ -1,0 +1,49 @@
+@if (loading()) {
+  <p class="muted">Carregando...</p>
+} @else if (errorMessage()) {
+  <div class="alert">{{ errorMessage() }}</div>
+} @else if (user()) {
+  <section class="hero-card">
+    <p class="eyebrow">Olá, {{ user()!.name }}</p>
+    <p class="muted small">Saldo disponível</p>
+    <p class="balance">{{ user()!.balance_cents | formatMoney }}</p>
+    <p class="muted small">Chave de pagamento</p>
+    <p class="mono">{{ user()!.payment_key }}</p>
+  </section>
+
+  <div class="grid-2">
+    <section class="card">
+      <h2>Transferir</h2>
+      <p class="muted small">Envie dinheiro por e-mail, telefone ou chave de pagamento.</p>
+      <a routerLink="/transfers" class="btn btn-primary">Nova transferência</a>
+    </section>
+    <section class="card">
+      <h2>Loja</h2>
+      <p class="muted small">Em breve</p>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="section-head standalone">
+      <h2>Últimas movimentações</h2>
+    </div>
+
+    @if (ledgerEntries().length === 0) {
+      <p class="muted">Nenhuma movimentação ainda.</p>
+    } @else {
+      <ul class="ledger-list">
+        @for (entry of ledgerEntries(); track entry.id) {
+          <li>
+            <span>{{ kindLabel(entry.kind) }}</span>
+            <span [class]="entry.amount_cents > 0 ? 'credit' : 'debit'">
+              {{ entry.amount_cents > 0 ? '+' : '' }}{{ entry.amount_cents | formatMoney }}
+            </span>
+            <time class="muted small">
+              {{ entry.created_at | date: 'dd/MM/yyyy HH:mm' }}
+            </time>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}

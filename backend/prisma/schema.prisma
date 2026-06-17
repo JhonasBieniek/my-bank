@@ -1,38 +1,64 @@
-generator client {
-    provider = "prisma-client-js"
-}
-
-datasource db {
-    provider = "mysql"
-    url = env("DATABASE_URL")
-    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-}
-
-model User {
-  id             Int      @id @default(autoincrement())
-  name           String
-  email          String   @unique
-  phone          String   @unique
-  passwordDigest String   @map("password_digest")
-  paymentKey     String   @unique @map("payment_key")
-  balanceCents   Int      @default(0) @map("balance_cents")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  ledgerEntries  LedgerEntry[]
-
-  @@map("users")
-}
-
-model LedgerEntry {
-  id                Int      @id @default(autoincrement())
-  userId            Int      @map("user_id")
-  kind              String
-  amountCents       Int      @map("amount_cents")
-  balanceAfterCents Int      @map("balance_after_cents")
-  createdAt         DateTime @default(now()) @map("created_at")
-  
-  user User @relation(fields: [userId], references: [id])
-  
-  @@map("ledger_entries")
-}
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url = env("DATABASE_URL")
+    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  phone          String   @unique
+  passwordDigest String   @map("password_digest")
+  paymentKey     String   @unique @map("payment_key")
+  balanceCents   Int      @default(0) @map("balance_cents")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  sentTransfers     Transfer[] @relation("SentTransfers")
+  receivedTransfers Transfer[] @relation("ReceivedTransfers")
+
+  @@map("users")
+}
+
+model Transfer {
+  id             Int      @id @default(autoincrement())
+  senderId       Int      @map("sender_id")
+  recipientId    Int      @map("recipient_id")
+  amountCents    Int      @map("amount_cents")
+  idempotencyKey String   @unique @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  sender    User @relation("SentTransfers", fields: [senderId], references: [id])
+  recipient User @relation("ReceivedTransfers", fields: [recipientId], references: [id])
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@map("transfers")
+}
+
+model LedgerEntry {
+  id                Int      @id @default(autoincrement())
+  accountType       String   @map("account_type")
+  accountId         Int      @map("account_id")
+  kind              String
+  amountCents       Int      @map("amount_cents")
+  balanceAfterCents Int      @map("balance_after_cents")
+  idempotencyKey    String?  @map("idempotency_key")
+  metadata          String?  @db.Text
+  referenceType     String?  @map("reference_type")
+  referenceId       Int?     @map("reference_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([accountType, accountId])
+  @@index([createdAt])
+  @@index([idempotencyKey])
+  @@index([referenceType, referenceId])
+  @@map("ledger_entries")
+}
