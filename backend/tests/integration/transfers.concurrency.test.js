@@ -140,6 +140,48 @@ describe('Transfer concurrency (banco real)', () => {
     });
   });
 
+  describe('transferências paralelas do saldo integral (simula 2+ abas)', () => {
+    it('apenas uma conclui; demais falham com saldo insuficiente', async () => {
+      if (skip) {
+        return;
+      }
+
+      const fullBalance = OPENING_BALANCE_CENTS;
+      const attempts = 3;
+      const baseKey = `concurrent-full-balance-${Date.now()}`;
+      const recipients = [bruno.email, carla.email, bruno.email];
+
+      const results = await Promise.all(
+        Array.from({ length: attempts }, (_, index) =>
+          transfer({
+            sender: ana,
+            payeeIdentifier: recipients[index],
+            amountCents: fullBalance,
+            idempotencyKey: `${baseKey}-${index}`,
+          })
+        )
+      );
+
+      const successes = results.filter((result) => result.ok);
+      const failures = results.filter((result) => !result.ok);
+
+      expect(successes.length).toBe(1);
+      expect(failures.length).toBe(attempts - 1);
+      expect(failures.every((result) => result.error.code === 'insufficient_funds')).toBe(true);
+
+      expect(await getUserBalance(ana.id)).toBe(0);
+      expect(await countTransfers({ senderId: ana.id })).toBe(1);
+
+      const brunoBalance = await getUserBalance(bruno.id);
+      const carlaBalance = await getUserBalance(carla.id);
+      const creditedTotal = brunoBalance + carlaBalance - 2 * OPENING_BALANCE_CENTS;
+      expect(creditedTotal).toBe(fullBalance);
+
+      await verifyAllLedgers(userIds);
+      await assertBalanceConservation(userIds);
+    });
+  });
+
   describe('idempotência sob requisições duplicadas concorrentes', () => {
     it('cria uma única transferência e debita o saldo uma vez', async () => {
       if (skip) {

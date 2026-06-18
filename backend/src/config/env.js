@@ -16,6 +16,11 @@ const env = {
     port: Number(process.env.API_PORT ?? 3000),
     databaseUrl: requireEnv('DATABASE_URL'),
     sessionSecret: requireEnv('SESSION_SECRET'),
+    frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:4200',
+    storeFeePercent: Number(process.env.STORE_FEE_PERCENT ?? 2),
+    uploadDir: path.resolve(__dirname, '../../', process.env.UPLOAD_DIR ?? 'uploads/products'),
+    maxUploadBytes: Number(process.env.MAX_UPLOAD_BYTES ?? 2 * 1024 * 1024),
+    isProduction: (process.env.NODE_ENV ?? 'development') === 'production',
 }
 
 module.exports = { env };

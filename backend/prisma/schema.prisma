@@ -1,64 +1,230 @@
-generator client {
-    provider = "prisma-client-js"
-}
-
-datasource db {
-    provider = "mysql"
-    url = env("DATABASE_URL")
-    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-}
-
-model User {
-  id             Int      @id @default(autoincrement())
-  name           String
-  email          String   @unique
-  phone          String   @unique
-  passwordDigest String   @map("password_digest")
-  paymentKey     String   @unique @map("payment_key")
-  balanceCents   Int      @default(0) @map("balance_cents")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  sentTransfers     Transfer[] @relation("SentTransfers")
-  receivedTransfers Transfer[] @relation("ReceivedTransfers")
-
-  @@map("users")
-}
-
-model Transfer {
-  id             Int      @id @default(autoincrement())
-  senderId       Int      @map("sender_id")
-  recipientId    Int      @map("recipient_id")
-  amountCents    Int      @map("amount_cents")
-  idempotencyKey String   @unique @map("idempotency_key")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  sender    User @relation("SentTransfers", fields: [senderId], references: [id])
-  recipient User @relation("ReceivedTransfers", fields: [recipientId], references: [id])
-
-  @@index([senderId])
-  @@index([recipientId])
-  @@map("transfers")
-}
-
-model LedgerEntry {
-  id                Int      @id @default(autoincrement())
-  accountType       String   @map("account_type")
-  accountId         Int      @map("account_id")
-  kind              String
-  amountCents       Int      @map("amount_cents")
-  balanceAfterCents Int      @map("balance_after_cents")
-  idempotencyKey    String?  @map("idempotency_key")
-  metadata          String?  @db.Text
-  referenceType     String?  @map("reference_type")
-  referenceId       Int?     @map("reference_id")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  @@index([accountType, accountId])
-  @@index([createdAt])
-  @@index([idempotencyKey])
-  @@index([referenceType, referenceId])
-  @@map("ledger_entries")
-}
+generator client {
+
+    provider = "prisma-client-js"
+
+}
+
+
+
+datasource db {
+
+    provider = "mysql"
+
+    url = env("DATABASE_URL")
+
+    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+
+}
+
+
+
+model User {
+
+  id             Int      @id @default(autoincrement())
+
+  name           String
+
+  email          String   @unique
+
+  phone          String   @unique
+
+  passwordDigest String   @map("password_digest")
+
+  paymentKey     String   @unique @map("payment_key")
+
+  balanceCents   Int      @default(0) @map("balance_cents")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+
+
+  sentTransfers     Transfer[] @relation("SentTransfers")
+
+  receivedTransfers Transfer[] @relation("ReceivedTransfers")
+
+  products          Product[]
+
+  purchases         Purchase[] @relation("BuyerPurchases")
+
+
+
+  @@map("users")
+
+}
+
+
+
+model Transfer {
+
+  id             Int      @id @default(autoincrement())
+
+  senderId       Int      @map("sender_id")
+
+  recipientId    Int      @map("recipient_id")
+
+  amountCents    Int      @map("amount_cents")
+
+  idempotencyKey String   @unique @map("idempotency_key")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+
+
+  sender    User @relation("SentTransfers", fields: [senderId], references: [id])
+
+  recipient User @relation("ReceivedTransfers", fields: [recipientId], references: [id])
+
+
+
+  @@index([senderId])
+
+  @@index([recipientId])
+
+  @@map("transfers")
+
+}
+
+
+
+model LedgerEntry {
+
+  id                Int      @id @default(autoincrement())
+
+  accountType       String   @map("account_type")
+
+  accountId         Int      @map("account_id")
+
+  kind              String
+
+  amountCents       Int      @map("amount_cents")
+
+  balanceAfterCents Int      @map("balance_after_cents")
+
+  idempotencyKey    String?  @map("idempotency_key")
+
+  metadata          String?  @db.Text
+
+  referenceType     String?  @map("reference_type")
+
+  referenceId       Int?     @map("reference_id")
+
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+
+
+  @@index([accountType, accountId])
+
+  @@index([createdAt])
+
+  @@index([idempotencyKey])
+
+  @@index([referenceType, referenceId])
+
+  @@map("ledger_entries")
+
+}
+
+
+
+model Product {
+
+  id              Int      @id @default(autoincrement())
+
+  sellerId        Int      @map("seller_id")
+
+  name            String
+
+  description     String?  @db.Text
+
+  priceCents      Int      @map("price_cents")
+
+  imageUrl        String?  @map("image_url")
+
+  cashbackPercent Int      @default(0) @map("cashback_percent")
+
+  active          Boolean  @default(true)
+
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+
+
+  seller    User       @relation(fields: [sellerId], references: [id])
+
+  purchases Purchase[]
+
+
+
+  @@index([sellerId])
+
+  @@index([active])
+
+  @@map("products")
+
+}
+
+
+
+model StoreTreasury {
+
+  id           Int      @id
+
+  balanceCents Int      @default(0) @map("balance_cents")
+
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+
+
+  @@map("store_treasuries")
+
+}
+
+
+
+model Purchase {
+
+  id             Int      @id @default(autoincrement())
+
+  buyerId        Int      @map("buyer_id")
+
+  productId      Int      @map("product_id")
+
+  grossCents     Int      @map("gross_cents")
+
+  feeCents       Int      @map("fee_cents")
+
+  cashbackCents  Int      @default(0) @map("cashback_cents")
+
+  sellerNetCents Int      @map("seller_net_cents")
+
+  idempotencyKey String   @unique @map("idempotency_key")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+
+
+  buyer   User    @relation("BuyerPurchases", fields: [buyerId], references: [id])
+
+  product Product @relation(fields: [productId], references: [id])
+
+
+
+  @@index([buyerId])
+
+  @@index([productId])
+
+  @@map("purchases")
+
+}
+

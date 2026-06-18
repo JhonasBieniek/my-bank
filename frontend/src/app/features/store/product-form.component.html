@@ -1,0 +1,68 @@
+<section class="card">
+  <div class="section-head standalone">
+    <div>
+      <h1>{{ pageTitle }}</h1>
+      <p class="muted small">
+        {{ isEditMode ? 'Atualize os dados do produto.' : 'Cadastre um novo item para vender na loja.' }}
+      </p>
+    </div>
+    <a routerLink="/my-products" class="btn btn-secondary">Voltar</a>
+  </div>
+
+  @if (loading) {
+    <p class="muted">Carregando...</p>
+  } @else {
+    @if (errorMessage) {
+      <div class="alert">{{ errorMessage }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
+      <div class="field">
+        <label for="name">Nome</label>
+        <input id="name" type="text" formControlName="name" />
+      </div>
+      <div class="field">
+        <label for="description">Descrição</label>
+        <textarea id="description" rows="3" formControlName="description"></textarea>
+      </div>
+      <div class="field">
+        <label for="price">Preço (R$)</label>
+        <input id="price" type="text" formControlName="price" inputmode="decimal" placeholder="19,90" />
+      </div>
+      <div class="field">
+        <label for="image">Imagem do produto (opcional)</label>
+        <input
+          id="image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          (change)="onImageSelected($event)"
+        />
+        <p class="muted small">JPEG, PNG ou WebP. Máximo 2 MB.</p>
+        @if (imagePreviewUrl) {
+          <img [src]="imagePreviewUrl" alt="Prévia da imagem" class="image-preview" />
+        } @else if (currentImageUrl) {
+          <img [src]="currentImageUrl" alt="Imagem atual" class="image-preview" />
+          <button type="button" class="btn btn-ghost" (click)="markImageForRemoval()">
+            Remover imagem
+          </button>
+        }
+      </div>
+      <div class="field">
+        <label for="cashback_percent">Cashback (%)</label>
+        <input id="cashback_percent" type="number" formControlName="cashback_percent" min="0" max="100" />
+      </div>
+      <div class="field checkbox">
+        <label>
+          <input type="checkbox" formControlName="active" />
+          Produto ativo na vitrine
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving">
+          {{ saving ? 'Salvando...' : isEditMode ? 'Salvar alterações' : 'Criar produto' }}
+        </button>
+        <a routerLink="/my-products" class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  }
+</section>

@@ -1,0 +1,59 @@
+<section class="card">
+  <div class="section-head standalone">
+    <div>
+      <h1>Meus produtos</h1>
+      <p class="muted small">Gerencie o que você vende na loja.</p>
+    </div>
+    <div class="head-actions">
+      <a routerLink="/my-products/new" class="btn btn-primary">Novo produto</a>
+      <a routerLink="/store" class="btn btn-secondary">Ver loja</a>
+    </div>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert">{{ errorMessage }}</div>
+  }
+
+  @if (successMessage) {
+    <div class="success">{{ successMessage }}</div>
+  }
+
+  @if (loading) {
+    <p class="muted">Carregando...</p>
+  } @else if (products.length === 0) {
+    <p class="muted">Você ainda não cadastrou produtos.</p>
+    <a routerLink="/my-products/new" class="btn btn-primary">Cadastrar primeiro produto</a>
+  } @else {
+    <ul class="mine-list">
+      @for (product of products; track product.id) {
+        <li>
+          <div class="product-info">
+            @if (product.image_url) {
+              <img [src]="product.image_url" [alt]="product.name" class="product-thumb" />
+            }
+            <div>
+              <strong>{{ product.name }}</strong>
+              <p class="muted small">{{ product.price_cents | formatMoney }}</p>
+              <p class="muted small">
+                Cashback {{ product.cashback_percent }}% ·
+                {{ product.active ? 'Ativo' : 'Inativo' }}
+              </p>
+            </div>
+          </div>
+          <div class="mine-actions">
+            <a [routerLink]="['/my-products', product.id, 'edit']" class="btn btn-secondary">
+              Editar
+            </a>
+            <button type="button" class="btn btn-ghost" (click)="deleteProduct(product)">
+              Remover
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  <div class="actions">
+    <a routerLink="/dashboard" class="btn btn-secondary">Voltar</a>
+  </div>
+</section>

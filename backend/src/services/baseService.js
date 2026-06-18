@@ -1,5 +1,7 @@
 const { prisma } = require('../lib/prisma');
 
+const STORE_TREASURY_SINGLETON_ID = 1;
+
 class InsufficientFundsError extends Error {
   constructor(message = 'Saldo insuficiente') {
     super(message);
@@ -46,6 +48,41 @@ async function lockUser(tx, userId) {
   };
 }
 
+async function lockTreasury(tx) {
+  const rows = await tx.$queryRaw`
+    SELECT
+      id,
+      balance_cents AS balanceCents,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM store_treasuries
+    WHERE id = ${STORE_TREASURY_SINGLETON_ID}
+    FOR UPDATE
+  `;
+
+  const row = rows[0];
+  if (!row) {
+    return tx.storeTreasury.findUniqueOrThrow({ where: { id: STORE_TREASURY_SINGLETON_ID } });
+  }
+
+  return {
+    ...row,
+    balanceCents: Number(row.balanceCents),
+  };
+}
+
+async function applyTreasuryBalance(tx, treasuryId, currentBalanceCents, deltaCents) {
+  const newBalance = currentBalanceCents + deltaCents;
+  if (newBalance < 0) {
+    throw new InsufficientFundsError();
+  }
+  await tx.storeTreasury.update({
+    where: { id: treasuryId },
+    data: { balanceCents: newBalance },
+  });
+  return newBalance;
+}
+
 async function applyUserBalance(tx, userId, currentBalanceCents, deltaCents) {
   const newBalance = currentBalanceCents + deltaCents;
   if (newBalance < 0) {
@@ -87,8 +124,11 @@ async function recordLedgerEntry(
 module.exports = {
   InsufficientFundsError,
   InvalidOperationError,
+  STORE_TREASURY_SINGLETON_ID,
   withWalletTransaction,
   lockUser,
+  lockTreasury,
   applyUserBalance,
+  applyTreasuryBalance,
   recordLedgerEntry,
 };

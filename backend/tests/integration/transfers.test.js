@@ -135,7 +135,7 @@ describe('POST /transfers', () => {
       transfer: {
         id: 10,
         amount_cents: 2_990,
-        recipient_name: 'Br***',
+        recipient_name: 'B*** B***',
       },
     });
     expect(transfer).toHaveBeenCalledWith({

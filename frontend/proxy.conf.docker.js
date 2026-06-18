@@ -14,5 +14,6 @@ module.exports = {
   '/auth': { target: PROXY_TARGET, secure: false, changeOrigin: true, bypass: bypassSpaNavigation },
   '/dashboard': { target: PROXY_TARGET, secure: false, changeOrigin: true, bypass: bypassSpaNavigation },
   '/transfers': { target: PROXY_TARGET, secure: false, changeOrigin: true, bypass: bypassSpaNavigation },
+  '/store': { target: PROXY_TARGET, secure: false, changeOrigin: true, bypass: bypassSpaNavigation },
   '/health': { target: PROXY_TARGET, secure: false, changeOrigin: true },
 };

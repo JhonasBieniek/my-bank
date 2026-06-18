@@ -1,6 +1,12 @@
+const { env } = require('../config/env');
+
 module.exports = {
+  MAX_USER_NAME_LENGTH: 120,
+  MAX_PRODUCT_NAME_LENGTH: 50,
   OPENING_BALANCE_CENTS: 30_000,
-  STORE_FEE_PERCENT: 2,
+  get STORE_FEE_PERCENT() {
+    return env.storeFeePercent;
+  },
   LEDGER_KINDS: [
     'opening_balance',
     'transfer_debit',

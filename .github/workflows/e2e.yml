@@ -1,0 +1,103 @@
+# E2E — Playwright (disparo MANUAL apenas; não roda em push/PR).
+#
+# === Como disparar no GitHub ===
+# 1. Aba "Actions"
+# 2. Workflow "E2E (Playwright)" (arquivo e2e.yml)
+# 3. "Run workflow" → escolha o branch → "Run workflow"
+#
+# === O que este job faz ===
+# 1. Cria .env a partir de .env.example
+# 2. npm ci (monorepo)
+# 3. docker compose up -d --build --wait  (MySQL + API + frontend Angular)
+# 4. Aguarda frontend em http://localhost:4200
+# 5. Instala Chromium do Playwright (com deps do SO)
+# 6. npm run test:e2e  (suíte de segurança em e2e/)
+# 7. docker compose down -v  (sempre, no final)
+#
+# === Local — PowerShell (mesmo fluxo do CI) ===
+#   Copy-Item .env.example .env
+#   docker compose up -d --build
+#   # aguarde API (http://localhost:3000/health) e frontend (http://localhost:4200)
+#   npm ci
+#   npm run test:e2e:install
+#   $env:CI = "true"
+#   npm run test:e2e
+#
+# === Local — bash ===
+#   cp .env.example .env && docker compose up -d --build
+#   npm ci && npm run test:e2e:install && CI=true npm run test:e2e
+
+name: E2E (Playwright)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: E2E security tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Create .env for Docker Compose
+        run: cp .env.example .env
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Start stack (db + api + frontend)
+        run: docker compose up -d --build --wait
+
+      - name: Wait for frontend dev server
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:4200 >/dev/null; then
+              echo "Frontend ready after ${i} attempt(s)"
+              exit 0
+            fi
+            echo "Waiting for frontend... ($i/60)"
+            sleep 5
+          done
+          echo "Frontend did not become ready in time"
+          docker compose logs --no-color frontend
+          exit 1
+
+      - name: Install Playwright Chromium (with OS deps)
+        run: npx playwright install chromium --with-deps
+        working-directory: e2e
+
+      - name: Run E2E suite
+        run: npm run test:e2e
+        env:
+          CI: true
+          API_BASE_URL: http://localhost:3000
+          FRONTEND_BASE_URL: http://localhost:4200
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: e2e/playwright-report/
+          retention-days: 7
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v

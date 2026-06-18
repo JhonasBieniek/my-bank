@@ -31,5 +31,17 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/transfers/transfers.routes').then((m) => m.transferRoutes),
   },
+  {
+    path: 'store',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/store/store.routes').then((m) => m.storeRoutes),
+  },
+  {
+    path: 'my-products',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/store/my-products.routes').then((m) => m.myProductsRoutes),
+  },
   { path: '**', redirectTo: 'login' },
 ];

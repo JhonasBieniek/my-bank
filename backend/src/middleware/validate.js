@@ -22,4 +22,4 @@ function validate(schema) {
   };
 }
 
-module.exports = { validate };
+module.exports = { validate, formatZodErrors };

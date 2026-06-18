@@ -1,8 +1,20 @@
+# CI principal — Jest no backend (obrigatório em push/PR).
+#
+# Job required: backend-tests (MySQL service container + Prisma migrate + Jest).
+# E2E Playwright NÃO roda aqui — veja .github/workflows/e2e.yml (disparo manual).
+#
+# Local (PowerShell):
+#   $env:DATABASE_URL = "mysql://ci:ci@127.0.0.1:3306/ci"
+#   $env:SESSION_SECRET = "ci-test-session-secret"
+#   $env:NODE_ENV = "test"
+#   npm ci
+#   npx prisma migrate deploy -w backend
+#   npm test -w backend
+
 name: CI
 
 on:
   push:
-    branches: [master]
   pull_request:
 
 concurrency:

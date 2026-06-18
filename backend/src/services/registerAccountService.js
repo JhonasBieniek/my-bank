@@ -12,7 +12,12 @@ function normalizeEmail(email) {
   return email.trim().toLowerCase();
 }
 
+function normalizeName(name) {
+  return name.trim().replace(/\s+/g, ' ');
+}
+
 async function registerAccount({ name, email, phone, password }) {
+  const normalizedName = normalizeName(name);
   const normalizedEmail = normalizeEmail(email);
   const normalizedPhone = normalizePhone(phone);
 
@@ -27,7 +32,7 @@ async function registerAccount({ name, email, phone, password }) {
     const user = await withWalletTransaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
-          name: name.trim(),
+          name: normalizedName,
           email: normalizedEmail,
           phone: normalizedPhone,
           passwordDigest,

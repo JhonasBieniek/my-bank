@@ -1,0 +1,103 @@
+<section class="card">
+  <div class="section-head standalone">
+    <div>
+      <div class="title-row">
+        <h1>Loja</h1>
+        <p class="treasury-balance">Tesouraria: {{ treasuryBalanceCents | formatMoney }}</p>
+      </div>
+      <p class="muted small">Compre produtos de outros usuários.</p>
+    </div>
+    <a routerLink="/my-products" class="btn btn-secondary">Meus produtos</a>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert">{{ errorMessage }}</div>
+  }
+
+  @if (successMessage) {
+    <div class="success">{{ successMessage }}</div>
+  }
+
+  @if (loading) {
+    <p class="muted">Carregando produtos...</p>
+  } @else if (products.length === 0) {
+    <p class="muted">Nenhum produto disponível no momento.</p>
+  } @else {
+    <ul class="product-grid">
+      @for (product of products; track product.id) {
+        <li class="product-card">
+          @if (product.image_url) {
+            <img [src]="product.image_url" [alt]="product.name" class="product-image" />
+          } @else {
+            <div class="product-image placeholder">Sem imagem</div>
+          }
+          <div class="product-body">
+            <h2>{{ product.name }}</h2>
+            @if (product.description) {
+              <p class="muted small">{{ product.description }}</p>
+            }
+            <p class="price">{{ product.price_cents | formatMoney }}</p>
+            @if (product.cashback_percent > 0) {
+              <p class="muted small">Cashback: {{ product.cashback_percent }}%</p>
+            }
+            @if (product.seller_name) {
+              <p class="muted small">Vendedor: {{ product.seller_name }}</p>
+            }
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="purchasingId === product.id"
+              (click)="purchase(product)"
+            >
+              {{ purchasingId === product.id ? 'Comprando...' : 'Comprar' }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+
+    @if (pagination.total_pages > 1) {
+      <nav class="pagination" aria-label="Paginação da loja">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="pagination.page <= 1"
+          (click)="goToPage(pagination.page - 1)"
+        >
+          Anterior
+        </button>
+
+        <div class="page-numbers">
+          @for (page of pageNumbers(); track page) {
+            <button
+              type="button"
+              class="page-btn"
+              [class.active]="page === pagination.page"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          }
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="pagination.page >= pagination.total_pages"
+          (click)="goToPage(pagination.page + 1)"
+        >
+          Próxima
+        </button>
+      </nav>
+
+      <p class="muted small pagination-meta">
+        Página {{ pagination.page }} de {{ pagination.total_pages }} —
+        {{ pagination.total }} produto{{ pagination.total === 1 ? '' : 's' }}
+      </p>
+    }
+  }
+
+  <div class="actions">
+    <a routerLink="/dashboard" class="btn btn-secondary">Voltar</a>
+  </div>
+</section>

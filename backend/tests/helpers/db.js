@@ -1,9 +1,16 @@
 const path = require('path');
+const { randomUUID } = require('crypto');
+const bcrypt = require('bcrypt');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
 const { PrismaClient } = require('@prisma/client');
-const { registerAccount } = require('../../src/services/registerAccountService');
+const { normalize: normalizePhone } = require('../../src/lib/phoneNormalizer');
+const {
+  withWalletTransaction,
+  applyUserBalance,
+  recordLedgerEntry,
+} = require('../../src/services/baseService');
 const { OPENING_BALANCE_CENTS } = require('../../src/lib/constants');
 
 const testPrisma = new PrismaClient();
@@ -27,21 +34,42 @@ function uniqueSuffix() {
 
 async function createTestUser({ name, emailLocal }) {
   const suffix = uniqueSuffix();
-  const email = `${emailLocal}.${suffix}@concurrency.test`;
-  const phoneDigits = String(Math.floor(Math.random() * 1e9)).padStart(9, '0');
+  const email = `${emailLocal}.${suffix}@concurrency.test`.toLowerCase();
+  const phone = normalizePhone(randomUUID().replace(/\D/g, '').slice(0, 11));
+  const passwordDigest = await bcrypt.hash('Test@1234', 12);
 
-  const result = await registerAccount({
-    name,
-    email,
-    phone: `11${phoneDigits}`,
-    password: 'Test@1234',
+  return withWalletTransaction(async (tx) => {
+    const createdUser = await tx.user.create({
+      data: {
+        name: name.trim(),
+        email,
+        phone,
+        passwordDigest,
+        paymentKey: randomUUID(),
+        balanceCents: 0,
+      },
+    });
+
+    const balanceAfterCents = await applyUserBalance(
+      tx,
+      createdUser.id,
+      0,
+      OPENING_BALANCE_CENTS
+    );
+
+    await recordLedgerEntry(tx, {
+      accountType: 'User',
+      accountId: createdUser.id,
+      kind: 'opening_balance',
+      amountCents: OPENING_BALANCE_CENTS,
+      balanceAfterCents,
+      referenceType: 'User',
+      referenceId: createdUser.id,
+      metadata: { reason: 'opening_balance' },
+    });
+
+    return tx.user.findUniqueOrThrow({ where: { id: createdUser.id } });
   });
-
-  if (!result.ok) {
-    throw new Error(result.error.message || `Falha ao criar usuário ${name}`);
-  }
-
-  return result.value;
 }
 
 async function resetUserWallet(userId) {
